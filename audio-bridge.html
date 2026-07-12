@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Bridge</title>
+</head>
+<body style="margin:0;padding:0;">
+    <audio id="bridge-audio" loop preload="metadata">
+        <source src="song.mp3.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        const audio = document.getElementById('bridge-audio');
+        
+        // Listen for messages from parent pages
+        window.addEventListener('message', (e) => {
+            if (e.data.action === 'play') {
+                audio.currentTime = e.data.time || 0;
+                audio.volume = e.data.volume || 0.5;
+                audio.play().catch(() => {});
+            }
+            if (e.data.action === 'pause') {
+                audio.pause();
+            }
+            if (e.data.action === 'setVolume') {
+                audio.volume = e.data.volume;
+            }
+            if (e.data.action === 'getState') {
+                e.source.postMessage({
+                    action: 'state',
+                    currentTime: audio.currentTime,
+                    paused: audio.paused,
+                    volume: audio.volume
+                }, '*');
+            }
+        });
+    </script>
+</body>
+</html>
