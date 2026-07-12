@@ -1,38 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Audio Bridge</title>
+<base target="_blank">
 </head>
-<body style="margin:0;padding:0;">
-    <audio id="bridge-audio" loop preload="metadata">
+<body>
+    <audio id="bg-music" loop>
         <source src="song.mp3.mp3" type="audio/mp3">
     </audio>
+
     <script>
-        const audio = document.getElementById('bridge-audio');
-        
-        // Listen for messages from parent pages
-        window.addEventListener('message', (e) => {
+        const audio = document.getElementById('bg-music');
+
+        window.addEventListener('message', function(e) {
             if (e.data.action === 'play') {
-                audio.currentTime = e.data.time || 0;
                 audio.volume = e.data.volume || 0.5;
-                audio.play().catch(() => {});
+                audio.play().then(() => {
+                    parent.postMessage({ action: 'playing', currentTime: audio.currentTime }, '*');
+                }).catch(err => {
+                    parent.postMessage({ action: 'play-blocked' }, '*');
+                });
             }
-            if (e.data.action === 'pause') {
+            else if (e.data.action === 'pause') {
                 audio.pause();
             }
-            if (e.data.action === 'setVolume') {
+            else if (e.data.action === 'setVolume') {
                 audio.volume = e.data.volume;
             }
-            if (e.data.action === 'getState') {
-                e.source.postMessage({
-                    action: 'state',
+            else if (e.data.action === 'getStatus') {
+                parent.postMessage({ 
+                    action: 'status', 
+                    isPlaying: !audio.paused,
                     currentTime: audio.currentTime,
-                    paused: audio.paused,
                     volume: audio.volume
                 }, '*');
             }
         });
+
+        window.parent.postMessage({ action: 'bridge-ready' }, '*');
     </script>
 </body>
 </html>
