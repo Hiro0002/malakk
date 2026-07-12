@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Malak's birthday cake</title>
     <style>
-      /* Global Styles */
+      /* Shared style for both images */
       .stylish-pic {
         width: 130px;         
         height: 130px;        
@@ -374,7 +374,6 @@
         box-shadow: 0 5px 10px rgba(255, 20, 147, 0.4);
       }
 
-      /* Audio Controls */
       .audio-controls { 
         position: fixed; 
         bottom: 20px; 
@@ -431,10 +430,9 @@
       }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <base target="_blank">
-</head>
+  </head>
   <body>
-    <!-- Audio Bridge (hidden iframe that keeps music playing) -->
+    <!-- Audio Bridge (hidden iframe that keeps music playing across pages) -->
     <iframe id="audioBridge" src="audio-bridge.html" style="position:fixed;width:0;height:0;border:0;z-index:-1;opacity:0;pointer-events:none;"></iframe>
 
     <!-- Balloons and Confetti will be added by JavaScript -->
@@ -487,7 +485,7 @@
       const bridge = document.getElementById('audioBridge');
       const playPauseBtn = document.getElementById('play-pause');
       const volumeControl = document.getElementById('volume');
-
+      
       let isPlaying = false;
       let currentVolume = 0.5;
 
@@ -497,14 +495,6 @@
         }
       }
 
-      // Request current state from bridge on load
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          sendToBridge('getState', {});
-        }, 500);
-      });
-
-      // Listen for state updates from bridge
       window.addEventListener('message', (e) => {
         if (e.data.action === 'state') {
           isPlaying = !e.data.paused;
@@ -512,6 +502,10 @@
           volumeControl.value = currentVolume;
           playPauseBtn.innerHTML = isPlaying ? '<i>⏸️</i>' : '<i>▶️</i>';
         }
+      });
+
+      window.addEventListener('load', () => {
+        setTimeout(() => { sendToBridge('getState', {}); }, 500);
       });
 
       playPauseBtn.addEventListener('click', () => {
@@ -531,19 +525,15 @@
         sendToBridge('setVolume', { volume: currentVolume });
       });
 
-      // ===== NAVIGATION WITH STATE SAVE =====
+      // ===== NAVIGATION =====
       function goBack() {
         sendToBridge('getState', {});
-        setTimeout(() => {
-          window.location.href = "memorylane.html";
-        }, 100);
+        setTimeout(() => { window.location.href = "memorylane.html"; }, 100);
       }
 
       function goNext() {
         sendToBridge('getState', {});
-        setTimeout(() => {
-          window.location.href = "letter.html";
-        }, 100);
+        setTimeout(() => { window.location.href = "letter.html"; }, 100);
       }
 
       // ===== CAKE LOGIC =====
